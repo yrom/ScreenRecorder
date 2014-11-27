@@ -8,7 +8,7 @@ Screen Recorder
 =====
 
 - `Display` 可以“投影”到一个 `VirtualDisplay`
-- 通过 `MediaProjectionManager` 取得的 `MediaProjection`创建`VirtualDisplay` 。
+- 通过 `MediaProjectionManager` 取得的 `MediaProjection`创建`VirtualDisplay` 
 - `VirtualDisplay` 会将图像渲染到 `Surface`中，而这个`Surface`是由`MediaCodec`所创建的
 
 ```
@@ -28,5 +28,6 @@ ByteBuffer encodedData = mEncoder.getOutputBuffer(index);
 ...
 mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo);
 ```
-所以其实在**Android 4.4**上可以通过`DisplayManager`来创建`VirtualDisplay`也是可以实现录屏，但因为权限限制需要**ROOT**。 (see [DisplayManager.createVirtualDisplay()]("https://developer.android.com/reference/android/hardware/display/DisplayManager.html#createVirtualDisplay(java.lang.String, int, int, int, android.view.Surface, int)"))
+所以其实在**Android 4.4**上可以通过`DisplayManager`来创建`VirtualDisplay`也是可以实现录屏，但因为权限限制需要**ROOT**。 (see [DisplayManager.createVirtualDisplay()][1])
 
+[1]: https://developer.android.com/reference/android/hardware/display/DisplayManager.html
