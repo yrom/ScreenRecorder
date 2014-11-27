@@ -94,14 +94,14 @@ public class ScreenRecorder extends Thread {
                     mWidth, mHeight, mDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
                     mSurface, null, null);
             Log.d(TAG, "created virtual display: " + mVirtualDisplay);
-            recordVirturalDisplay();
+            recordVirtualDisplay();
 
         } finally {
             release();
         }
     }
 
-    private void recordVirturalDisplay() {
+    private void recordVirtualDisplay() {
         while (!mQuit.get()) {
             int index = mEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_US);
             Log.i(TAG, "dequeue output buffer index=" + index);
