@@ -42,12 +42,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mButton.setOnClickListener(this);
         //noinspection ResourceType
         mMediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-        getSystemService(NOTIFICATION_SERVICE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i("@@", "onActivityResult:" + requestCode + ", " + resultCode);
         MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
         if (mediaProjection == null) {
             Log.e("@@", "media projection is null");
@@ -70,6 +68,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         if (mRecorder != null) {
             mRecorder.quit();
+            mRecorder = null;
             mButton.setText("Restart recorder");
         } else {
             Intent captureIntent = mMediaProjectionManager.createScreenCaptureIntent();
@@ -78,4 +77,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mRecorder != null){
+            mRecorder.quit();
+            mRecorder = null;
+        }
+    }
 }
