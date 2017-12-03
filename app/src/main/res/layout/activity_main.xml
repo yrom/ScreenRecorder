@@ -1,12 +1,79 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingEnd="@dimen/activity_horizontal_margin"
+    android:paddingStart="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
 
-    <Button
+    <LinearLayout
+        android:id="@+id/media_format_chooser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/button"
+        android:orientation="vertical">
+
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/media_codec"
+            android:name="Encoder (h264 avc)"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/resolution"
+            android:name="Resolution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:entries="@array/resolutions" />
+
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/bitrate"
+            android:name="Bitrate (kbps)"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="8dp"
+            android:entries="@array/bitrates" />
+
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/framerate"
+            android:name="Frame Rate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="8dp"
+            android:entries="@array/framerates" />
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/iframe_interval"
+            android:name="I-Frame Interval"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="8dp"
+            android:entries="@array/iframeintervals" />
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/avc_profile"
+            android:name="AVCProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <net.yrom.screenrecorder.view.NamedSpinner
+            android:id="@+id/orientation"
+            android:name="Orientation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="8dp"
+            android:entries="@array/orientations" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/record_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Start Recorder" />
 
 </FrameLayout>
