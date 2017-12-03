@@ -170,7 +170,7 @@ public class MainActivity extends Activity {
 
             // video size
             int[] selectedWithHeight = getSelectedWithHeight();
-            boolean isLandscape = !isLandscape();
+            boolean isLandscape = isLandscape();
             int width = selectedWithHeight[isLandscape ? 0 : 1];
             int height = selectedWithHeight[isLandscape ? 1 : 0];
             int framerate = getSelectedFramerate();
@@ -320,7 +320,7 @@ public class MainActivity extends Activity {
         MediaCodecInfo.VideoCapabilities videoCapabilities = capabilities.getVideoCapabilities();
         String[] xes = resolution.split("x");
         if (xes.length != 2) throw new IllegalArgumentException();
-        boolean isLandscape = !isLandscape();
+        boolean isLandscape = isLandscape();
         int width = Integer.parseInt(xes[isLandscape ? 0 : 1]);
         int height = Integer.parseInt(xes[isLandscape ? 1 : 0]);
 
@@ -391,7 +391,7 @@ public class MainActivity extends Activity {
         MediaCodecInfo.VideoCapabilities videoCapabilities = capabilities.getVideoCapabilities();
         int[] selectedWithHeight = getSelectedWithHeight();
         int selectedFramerate = Integer.parseInt(rate);
-        boolean isLandscape = !isLandscape();
+        boolean isLandscape = isLandscape();
         int width = selectedWithHeight[isLandscape ? 0 : 1];
         int height = selectedWithHeight[isLandscape ? 1 : 0];
 
@@ -474,7 +474,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean isLandscape() {
-        return mOrientation != null && mOrientation.getSelectedItemPosition() == 0;
+        return mOrientation != null && mOrientation.getSelectedItemPosition() == 1;
     }
 
     private int getSelectedFramerate() {
