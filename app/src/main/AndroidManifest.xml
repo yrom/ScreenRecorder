@@ -3,7 +3,7 @@
     package="net.yrom.screenrecorder" >
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:allowBackup="false"
         android:roundIcon="@mipmap/ic_launcher_round"

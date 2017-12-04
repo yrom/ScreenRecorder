@@ -88,7 +88,7 @@ class Utils {
     /**
      * @param avcProfileLevel AVC CodecProfileLevel
      */
-    static String toHumanReadable(MediaCodecInfo.CodecProfileLevel avcProfileLevel) {
+    static String avcProfileLevelToString(MediaCodecInfo.CodecProfileLevel avcProfileLevel) {
         if (sAVCProfiles.size() == 0 || sAVCLevels.size() == 0) {
             initAVCProfileLevels();
         }

@@ -8,8 +8,8 @@ android {
         applicationId "net.yrom.screenrecorder"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 5
-        versionName '1.5'
+        versionCode 9
+        versionName '2.0'
     }
 
     compileOptions {
