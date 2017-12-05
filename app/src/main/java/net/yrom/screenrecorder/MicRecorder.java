@@ -306,31 +306,30 @@ class MicRecorder implements Encoder {
      * 1 sample = 16 bit
      */
     private long calculateFrameTimestamp(int totalBits) {
-        int frames = totalBits >> 4;
-        long framesUs = mFramesUsCache.get(frames, -1);
-        if (framesUs == -1) {
-            framesUs = frames * 1000_000 / mChannelsSampleRate;
-            mFramesUsCache.put(frames, framesUs);
+        int samples = totalBits >> 4;
+        long frameUs = mFramesUsCache.get(samples, -1);
+        if (frameUs == -1) {
+            frameUs = samples * 1000_000 / mChannelsSampleRate;
+            mFramesUsCache.put(samples, frameUs);
         }
         long timeUs = SystemClock.elapsedRealtimeNanos() / 1000;
+        // accounts the delay of polling the audio sample data
+        timeUs -= frameUs;
         long currentUs;
         long lastFrameUs = mFramesUsCache.get(LAST_FRAME_ID, -1);
-        if (lastFrameUs == -1) {
-            // accounts the delay of polling the audio sample data
-            timeUs -= framesUs;
+        if (lastFrameUs == -1) { // it's the first frame
             currentUs = timeUs;
         } else {
-            currentUs = lastFrameUs + framesUs;
-            //+ (1000_000 * mTotalSamples) / mChannelsSampleRate;
+            currentUs = lastFrameUs;
         }
         if (VERBOSE)
-            Log.d(TAG, "count frames pts: " + currentUs + ", time pts: " + timeUs + ", frames: " + frames);
+            Log.i(TAG, "count samples pts: " + currentUs + ", time pts: " + timeUs + ", samples: " + samples);
         // maybe too late to acquire sample data
-        if (timeUs - currentUs >= (framesUs << 1)) {
+        if (timeUs - currentUs >= (frameUs << 1)) {
             // reset
             currentUs = timeUs;
         }
-        mFramesUsCache.put(LAST_FRAME_ID, currentUs);
+        mFramesUsCache.put(LAST_FRAME_ID, currentUs + frameUs);
         return currentUs;
     }
 
