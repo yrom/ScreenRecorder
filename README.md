@@ -1,12 +1,16 @@
 Screen Recorder
 =====
-这是个DEMO APP 主要是实现了屏幕录制功能（同时录制来自麦克风的声音）。
+这是个DEMO APP 主要是实现了屏幕录制功能（可同时录制来自麦克风的声音）。
 
-通过使用 [MediaProjectionManager][1], [VirtualDisplay][2], [AudioRecord][3], [MediaCodec][4] 以及 [MediaMuxer][4] 等API，故而这个项目支持Android 5.0 (及以上)。
+<img alt="screenshot" src="screenshot.png" width="50%" />
+
+[点此处下载APK][7] 快速预览项目功能
+
+说明：使用了 [MediaProjectionManager][1], [VirtualDisplay][2], [AudioRecord][3], [MediaCodec][4] 以及 [MediaMuxer][5] 等API，故而这个项目最低支持Android 5.0。
 
 录屏原理
 =====
-**注意 ** 你可以checkout  [32c005412](https://github.com/yrom/ScreenRecorder/tree/32c00541299e6ff56763e8f2254983008f03b24a) 查看原始的（不包含麦克风录制的）代码
+** 注意 ** 你可以checkout  [32c005412](https://github.com/yrom/ScreenRecorder/tree/32c00541299e6ff56763e8f2254983008f03b24a) 查看原始的（不包含麦克风录制的）代码
 - `Display` 可以“投影”到一个 `VirtualDisplay`
 - 通过 `MediaProjectionManager` 取得的 `MediaProjection`创建`VirtualDisplay` 
 - `VirtualDisplay` 会将图像渲染到 `Surface`中，而这个`Surface`是由`MediaCodec`所创建的
@@ -36,5 +40,5 @@ mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo);
 [4]: http://developer.android.com/reference/android/media/MediaCodec.html
 [5]: http://developer.android.com/reference/android/media/MediaMuxer.html
 [6]: https://developer.android.com/reference/android/hardware/display/DisplayManager.html
-
+[7]: https://github.com/yrom/ScreenRecorder/releases/download/v2.2/app-release-2.2.apk
 
