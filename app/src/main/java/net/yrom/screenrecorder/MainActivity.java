@@ -184,7 +184,7 @@ public class MainActivity extends Activity {
             int bitrate = getSelectedBitrate();
             MediaCodecInfo.CodecProfileLevel profileLevel = getSelectedProfileLevel();
 
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-kkmmss", Locale.US);
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
             final File file = new File(dir, "Screen-" + format.format(new Date())
                     + "-" + width + "x" + height + ".mp4");
             mRecorder = new ScreenRecorder(new VideoEncodeConfig(width, height, bitrate,
