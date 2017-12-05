@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <resources>
     <!-- width x height -->
-    <string-array name="resolutions">
+    <string-array name="video_resolutions">
         <item>480x360</item>
         <item>720x480</item>
         <item>1280x720</item>
         <item>1920x1080</item>
         <item>3860x2160</item>
     </string-array>
+    <!-- audio channel counts-->
+    <string-array name="audio_channels">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
     <!-- video bitrate (kbps) -->
-    <string-array name="bitrates">
-        <item>700</item>
-        <item>1500</item>
+    <string-array name="video_bitrates">
+        <item>800</item>
+        <item>1200</item>
+        <item>1600</item>
+        <item>2000</item>
         <item>2500</item>
         <item>5000</item>
         <item>10000</item>
@@ -20,8 +27,9 @@
         <item>20000</item>
         <item>25000</item>
     </string-array>
-    <string-array name="framerates">
+    <string-array name="video_framerates">
         <item>15</item>
+        <item>25</item>
         <item>30</item>
         <item>60</item>
         <item>90</item>

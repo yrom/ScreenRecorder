@@ -36,15 +36,14 @@ public class VideoEncodeConfig {
     final MediaCodecInfo.CodecProfileLevel codecProfileLevel;
 
     /**
-     *
-     * @param codecName selected codec name, maybe null
-     * @param mimeType video MIME type, cannot be null
+     * @param codecName         selected codec name, maybe null
+     * @param mimeType          video MIME type, cannot be null
      * @param codecProfileLevel profile level for video encoder nullable
      */
     public VideoEncodeConfig(int width, int height, int bitrate,
-                      int framerate, int iframeInterval,
-                      String codecName, String mimeType,
-                      MediaCodecInfo.CodecProfileLevel codecProfileLevel) {
+                             int framerate, int iframeInterval,
+                             String codecName, String mimeType,
+                             MediaCodecInfo.CodecProfileLevel codecProfileLevel) {
         this.width = width;
         this.height = height;
         this.bitrate = bitrate;
@@ -70,4 +69,17 @@ public class VideoEncodeConfig {
         return format;
     }
 
+    @Override
+    public String toString() {
+        return "VideoEncodeConfig{" +
+                "width=" + width +
+                ", height=" + height +
+                ", bitrate=" + bitrate +
+                ", framerate=" + framerate +
+                ", iframeInterval=" + iframeInterval +
+                ", codecName='" + codecName + '\'' +
+                ", mimeType='" + mimeType + '\'' +
+                ", codecProfileLevel=" + (codecProfileLevel == null ? "" : Utils.avcProfileLevelToString(codecProfileLevel)) +
+                '}';
+    }
 }

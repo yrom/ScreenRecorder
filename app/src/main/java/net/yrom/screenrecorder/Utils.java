@@ -81,6 +81,7 @@ class Utils {
     }
 
 
+    static SparseArray<String> sAACProfiles = new SparseArray<>();
     static SparseArray<String> sAVCProfiles = new SparseArray<>();
     static SparseArray<String> sAVCLevels = new SparseArray<>();
 
@@ -90,7 +91,7 @@ class Utils {
      */
     static String avcProfileLevelToString(MediaCodecInfo.CodecProfileLevel avcProfileLevel) {
         if (sAVCProfiles.size() == 0 || sAVCLevels.size() == 0) {
-            initAVCProfileLevels();
+            initProfileLevels();
         }
         String profile = null, level = null;
         int i = sAVCProfiles.indexOfKey(avcProfileLevel.profile);
@@ -112,17 +113,34 @@ class Utils {
         return profile + '-' + level;
     }
 
-    static MediaCodecInfo.CodecProfileLevel toProfileLevel(String str) {
-        if (sAVCProfiles.size() == 0 || sAVCLevels.size() == 0) {
-            initAVCProfileLevels();
+    static String[] aacProfiles() {
+        if (sAACProfiles.size() == 0) {
+            initProfileLevels();
         }
+        String[] profiles = new String[sAACProfiles.size()];
+        for (int i = 0; i < sAACProfiles.size(); i++) {
+            profiles[i] = sAACProfiles.valueAt(i);
+        }
+        return profiles;
+    }
+
+    static MediaCodecInfo.CodecProfileLevel toProfileLevel(String str) {
+        if (sAVCProfiles.size() == 0 || sAVCLevels.size() == 0 || sAACProfiles.size() == 0) {
+            initProfileLevels();
+        }
+        String profile = str;
+        String level = null;
         int i = str.indexOf('-');
-        if (i < 0) return null;
-        String profile = str.substring(0, i);
-        String level = str.substring(i + 1);
+        if (i > 0) { // AVC profile has level
+            profile = str.substring(0, i);
+            level = str.substring(i + 1);
+        }
+
         MediaCodecInfo.CodecProfileLevel res = new MediaCodecInfo.CodecProfileLevel();
         if (profile.startsWith("AVC")) {
             res.profile = keyOfValue(sAVCProfiles, profile);
+        } else if (profile.startsWith("AAC")) {
+            res.profile = keyOfValue(sAACProfiles, profile);
         } else {
             try {
                 res.profile = Integer.parseInt(profile);
@@ -130,16 +148,20 @@ class Utils {
                 return null;
             }
         }
-        if (level.startsWith("AVC")) {
-            res.level = keyOfValue(sAVCLevels, level);
-        } else {
-            try {
-                res.level = Integer.parseInt(level);
-            } catch (NumberFormatException e) {
-                return null;
+
+        if (level != null) {
+            if (level.startsWith("AVC")) {
+                res.level = keyOfValue(sAVCLevels, level);
+            } else {
+                try {
+                    res.level = Integer.parseInt(level);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
         }
-        return res.profile > 0 && res.level > 0 ? res : null;
+
+        return res.profile > 0 && res.level >= 0 ? res : null;
     }
 
     private static <T> int keyOfValue(SparseArray<T> array, T value) {
@@ -153,7 +175,7 @@ class Utils {
         return -1;
     }
 
-    private static void initAVCProfileLevels() {
+    private static void initProfileLevels() {
         Field[] fields = MediaCodecInfo.CodecProfileLevel.class.getFields();
         for (Field f : fields) {
             if ((f.getModifiers() & (Modifier.STATIC | Modifier.FINAL)) == 0) {
@@ -165,6 +187,8 @@ class Utils {
                 target = sAVCProfiles;
             } else if (name.startsWith("AVCLevel")) {
                 target = sAVCLevels;
+            } else if (name.startsWith("AACObject")) {
+                target = sAACProfiles;
             } else {
                 continue;
             }
