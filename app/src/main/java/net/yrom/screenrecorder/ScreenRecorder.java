@@ -42,6 +42,7 @@ import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 public class ScreenRecorder {
     private static final String TAG = "ScreenRecorder";
     private static final boolean VERBOSE = false;
+    private static final int INVALID_INDEX = -1;
     static final String VIDEO_AVC = MIMETYPE_VIDEO_AVC; // H.264 Advanced Video Coding
     static final String AUDIO_AAC = MIMETYPE_AUDIO_AAC; // H.264 Advanced Audio Coding
     private int mWidth;
@@ -53,7 +54,7 @@ public class ScreenRecorder {
     private MicRecorder mAudioEncoder;
 
     private MediaFormat mVideoOutputFormat = null, mAudioOutputFormat = null;
-    private int mVideoTrackIndex = -1, mAudioTrackIndex = -1;
+    private int mVideoTrackIndex = INVALID_INDEX, mAudioTrackIndex = INVALID_INDEX;
     private MediaMuxer mMuxer;
     private boolean mMuxerStarted = false;
 
@@ -101,7 +102,7 @@ public class ScreenRecorder {
         if (!mIsRunning.get()) {
             release();
         } else {
-            signalStop();
+            signalStop(false);
         }
 
     }
@@ -134,6 +135,7 @@ public class ScreenRecorder {
     private static final int MSG_STOP = 1;
     private static final int MSG_ERROR = 2;
     private static final int STOP_WITH_EOS = 1;
+
     private class CallbackHandler extends Handler {
         CallbackHandler(Looper looper) {
             super(looper);
@@ -168,10 +170,16 @@ public class ScreenRecorder {
     private void signalEndOfStream() {
         MediaCodec.BufferInfo eos = new MediaCodec.BufferInfo();
         ByteBuffer buffer = ByteBuffer.allocate(0);
-        eos.set(0, 0,0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+        eos.set(0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
         if (VERBOSE) Log.i(TAG, "Signal EOS to muxer ");
-        writeSampleData(mVideoTrackIndex, eos, buffer);
-        writeSampleData(mAudioTrackIndex, eos, buffer);
+        if (mVideoTrackIndex != INVALID_INDEX) {
+            writeSampleData(mVideoTrackIndex, eos, buffer);
+        }
+        if (mAudioTrackIndex != INVALID_INDEX) {
+            writeSampleData(mAudioTrackIndex, eos, buffer);
+        }
+        mVideoTrackIndex = INVALID_INDEX;
+        mAudioTrackIndex = INVALID_INDEX;
     }
 
     private void record() {
@@ -205,7 +213,7 @@ public class ScreenRecorder {
             Log.w(TAG, "muxVideo: Already stopped!");
             return;
         }
-        if (!mMuxerStarted) {
+        if (!mMuxerStarted || mVideoTrackIndex == INVALID_INDEX) {
             mPendingVideoEncoderBufferIndices.add(index);
             mPendingVideoEncoderBufferInfos.add(buffer);
             return;
@@ -214,9 +222,11 @@ public class ScreenRecorder {
         writeSampleData(mVideoTrackIndex, buffer, encodedData);
         mVideoEncoder.releaseOutputBuffer(index);
         if ((buffer.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-            if (VERBOSE) Log.d(TAG, "Stop encoder and muxer, since the buffer has been marked with EOS");
+            if (VERBOSE)
+                Log.d(TAG, "Stop encoder and muxer, since the buffer has been marked with EOS");
             // send release msg
-            signalStop();
+            mVideoTrackIndex = INVALID_INDEX;
+            signalStop(true);
         }
     }
 
@@ -226,7 +236,7 @@ public class ScreenRecorder {
             Log.w(TAG, "muxAudio: Already stopped!");
             return;
         }
-        if (!mMuxerStarted) {
+        if (!mMuxerStarted || mAudioTrackIndex == INVALID_INDEX) {
             mPendingAudioEncoderBufferIndices.add(index);
             mPendingAudioEncoderBufferInfos.add(buffer);
             return;
@@ -236,10 +246,13 @@ public class ScreenRecorder {
         writeSampleData(mAudioTrackIndex, buffer, encodedData);
         mAudioEncoder.releaseOutputBuffer(index);
         if ((buffer.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-            if (VERBOSE) Log.d(TAG, "Stop encoder and muxer, since the buffer has been marked with EOS");
-            signalStop();
+            if (VERBOSE)
+                Log.d(TAG, "Stop encoder and muxer, since the buffer has been marked with EOS");
+            mAudioTrackIndex = INVALID_INDEX;
+            signalStop(true);
         }
     }
+
     private void writeSampleData(int track, MediaCodec.BufferInfo buffer, ByteBuffer encodedData) {
         if ((buffer.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
             // The codec config data was pulled out and fed to the muxer when we got
@@ -253,14 +266,17 @@ public class ScreenRecorder {
             if (VERBOSE) Log.d(TAG, "info.size == 0, drop it.");
             encodedData = null;
         } else {
-            if (track == mVideoTrackIndex) {
-                resetVideoPts(buffer);
-            } else if (track == mAudioTrackIndex) {
-                resetAudioPts(buffer);
+            if (buffer.presentationTimeUs != 0) { // maybe 0 if eos
+                if (track == mVideoTrackIndex) {
+                    resetVideoPts(buffer);
+                } else if (track == mAudioTrackIndex) {
+                    resetAudioPts(buffer);
+                }
             }
-            if (VERBOSE) Log.d(TAG, "[" + Thread.currentThread().getId() + "] Got buffer, track=" + track
-                    + ", info: size=" + buffer.size
-                    + ", presentationTimeUs=" + buffer.presentationTimeUs);
+            if (VERBOSE)
+                Log.d(TAG, "[" + Thread.currentThread().getId() + "] Got buffer, track=" + track
+                        + ", info: size=" + buffer.size
+                        + ", presentationTimeUs=" + buffer.presentationTimeUs);
             if (!eos && mCallback != null) {
                 mCallback.onRecording(buffer.presentationTimeUs);
             }
@@ -269,7 +285,8 @@ public class ScreenRecorder {
             encodedData.position(buffer.offset);
             encodedData.limit(buffer.offset + buffer.size);
             mMuxer.writeSampleData(track, encodedData, buffer);
-            if (VERBOSE) Log.i(TAG, "Sent " + buffer.size + " bytes to MediaMuxer on track " + track);
+            if (VERBOSE)
+                Log.i(TAG, "Sent " + buffer.size + " bytes to MediaMuxer on track " + track);
         }
     }
 
@@ -283,6 +300,7 @@ public class ScreenRecorder {
             buffer.presentationTimeUs -= mAudioPtsOffset;
         }
     }
+
     private void resetVideoPts(MediaCodec.BufferInfo buffer) {
         if (mVideoPtsOffset == 0) {
             mVideoPtsOffset = buffer.presentationTimeUs;
@@ -297,7 +315,8 @@ public class ScreenRecorder {
         if (mVideoTrackIndex >= 0 || mMuxerStarted) {
             throw new IllegalStateException("output format already changed!");
         }
-        if (VERBOSE) Log.i(TAG, "Video output format changed.\n New format: " + newFormat.toString());
+        if (VERBOSE)
+            Log.i(TAG, "Video output format changed.\n New format: " + newFormat.toString());
         mVideoOutputFormat = newFormat;
     }
 
@@ -306,7 +325,8 @@ public class ScreenRecorder {
         if (mAudioTrackIndex >= 0 || mMuxerStarted) {
             throw new IllegalStateException("output format already changed!");
         }
-        if (VERBOSE) Log.i(TAG, "Audio output format changed.\n New format: " + newFormat.toString());
+        if (VERBOSE)
+            Log.i(TAG, "Audio output format changed.\n New format: " + newFormat.toString());
         mAudioOutputFormat = newFormat;
     }
 
@@ -375,7 +395,8 @@ public class ScreenRecorder {
 
             @Override
             public void onOutputBufferAvailable(BaseEncoder codec, int index, MediaCodec.BufferInfo info) {
-                if (VERBOSE) Log.i(TAG, "[" + Thread.currentThread().getId() + "] AudioEncoder output buffer available: index=" + index);
+                if (VERBOSE)
+                    Log.i(TAG, "[" + Thread.currentThread().getId() + "] AudioEncoder output buffer available: index=" + index);
                 try {
                     muxAudio(index, info);
                 } catch (Exception e) {
@@ -386,7 +407,8 @@ public class ScreenRecorder {
 
             @Override
             public void onOutputFormatChanged(BaseEncoder codec, MediaFormat format) {
-                if (VERBOSE) Log.d(TAG, "[" + Thread.currentThread().getId() + "] AudioEncoder returned new format " + format);
+                if (VERBOSE)
+                    Log.d(TAG, "[" + Thread.currentThread().getId() + "] AudioEncoder returned new format " + format);
                 resetAudioOutputFormat(format);
                 startMuxerIfReady();
             }
@@ -404,8 +426,8 @@ public class ScreenRecorder {
         mAudioEncoder.prepare();
     }
 
-    private void signalStop() {
-        Message msg = Message.obtain(mHandler, MSG_STOP, STOP_WITH_EOS, 0);
+    private void signalStop(boolean stopWithEOS) {
+        Message msg = Message.obtain(mHandler, MSG_STOP, stopWithEOS ? STOP_WITH_EOS : 0, 0);
         mHandler.sendMessageAtFrontOfQueue(msg);
     }
 
@@ -439,7 +461,7 @@ public class ScreenRecorder {
         }
 
         mVideoOutputFormat = mAudioOutputFormat = null;
-        mVideoTrackIndex = mAudioTrackIndex = -1;
+        mVideoTrackIndex = mAudioTrackIndex = INVALID_INDEX;
         mMuxerStarted = false;
 
         if (mWorker != null) {
