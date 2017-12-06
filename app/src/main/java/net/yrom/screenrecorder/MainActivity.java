@@ -181,6 +181,11 @@ public class MainActivity extends Activity {
                     toast("Recorder error ! See logcat for more details");
                     error.printStackTrace();
                     output.delete();
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                            .addCategory(Intent.CATEGORY_DEFAULT)
+                            .setData(Uri.fromFile(output));
+                    sendBroadcast(intent);
                 }
             }
 
@@ -255,7 +260,6 @@ public class MainActivity extends Activity {
         super.onDestroy();
         saveSelections();
         stopRecorder();
-        mNotifications = null;
     }
 
     private void startCaptureIntent() {
@@ -798,7 +802,7 @@ public class MainActivity extends Activity {
     private void restoreSelectionFromPreferences(SharedPreferences preferences, NamedSpinner spinner) {
         int resId = spinner.getId();
         String key = getResources().getResourceEntryName(resId);
-        int value = preferences.getInt(key, 0);
+        int value = preferences.getInt(key, -1);
         if (value >= 0 && spinner.getAdapter() != null) {
             spinner.setSelectedPosition(value);
         }
