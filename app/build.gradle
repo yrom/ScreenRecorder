@@ -5,11 +5,11 @@ android {
     buildToolsVersion '26.0.2'
 
     defaultConfig {
-        applicationId "net.yrom.screenrecorder"
+        applicationId "net.yrom.screenrecorder.demo"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 11
-        versionName '2.2'
+        versionCode 12
+        versionName '2.3'
     }
 
     compileOptions {

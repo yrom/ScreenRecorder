@@ -4,7 +4,7 @@ Screen Recorder
 
 <img alt="screenshot" src="screenshot.png" width="50%" />
 
-[点此处下载APK][7] 快速预览项目功能
+[![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/badge_new.png)][8]  [点此处下载APK][7] 快速预览项目功能
 
 说明：使用了 [MediaProjectionManager][1], [VirtualDisplay][2], [AudioRecord][3], [MediaCodec][4] 以及 [MediaMuxer][5] 等API，故而这个项目最低支持Android 5.0。
 
@@ -37,8 +37,8 @@ mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo);
 [1]: https://developer.android.com/reference/android/media/projection/MediaProjectionManager.html
 [2]: https://developer.android.com/reference/android/hardware/display/VirtualDisplay.html
 [3]: https://developer.android.com/reference/android/media/AudioRecord.html
-[4]: http://developer.android.com/reference/android/media/MediaCodec.html
-[5]: http://developer.android.com/reference/android/media/MediaMuxer.html
+[4]: https://developer.android.com/reference/android/media/MediaCodec.html
+[5]: https://developer.android.com/reference/android/media/MediaMuxer.html
 [6]: https://developer.android.com/reference/android/hardware/display/DisplayManager.html
-[7]: https://github.com/yrom/ScreenRecorder/releases/download/v2.2/app-release-2.2.apk
-
+[7]: https://github.com/yrom/ScreenRecorder/releases/download/v2.3/app-release-2.3.apk
+[8]: https://play.google.com/store/apps/details?id=net.yrom.screenrecorder.demo
