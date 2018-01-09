@@ -40,5 +40,5 @@ mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo);
 [4]: https://developer.android.com/reference/android/media/MediaCodec.html
 [5]: https://developer.android.com/reference/android/media/MediaMuxer.html
 [6]: https://developer.android.com/reference/android/hardware/display/DisplayManager.html
-[7]: https://github.com/yrom/ScreenRecorder/releases/download/v2.3/app-release-2.3.apk
+[7]: https://github.com/yrom/ScreenRecorder/releases/latest
 [8]: https://play.google.com/store/apps/details?id=net.yrom.screenrecorder.demo
