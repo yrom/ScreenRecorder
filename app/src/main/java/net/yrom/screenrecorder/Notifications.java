@@ -85,7 +85,7 @@ class Notifications extends ContextWrapper {
     @TargetApi(O)
     private void createNotificationChannel() {
         NotificationChannel channel =
-                new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+                new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
         channel.setShowBadge(false);
         getNotificationManager().createNotificationChannel(channel);
     }

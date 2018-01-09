@@ -44,6 +44,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.SpinnerAdapter;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import net.yrom.screenrecorder.view.NamedSpinner;
 
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
     // members below will be initialized in onCreate()
     private MediaProjectionManager mMediaProjectionManager;
     private Button mButton;
+    private ToggleButton mAudioToggle;
     private NamedSpinner mVieoResolution;
     private NamedSpinner mVideoFramerate;
     private NamedSpinner mIFrameInterval;
@@ -113,6 +115,9 @@ public class MainActivity extends Activity {
             mAudioCodec.setAdapter(codecsAdapter);
             restoreSelections(mAudioCodec, mAudioChannelCount);
         });
+        mAudioToggle.setChecked(
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                        .getBoolean(getResources().getResourceEntryName(mAudioToggle.getId()), true));
     }
 
     @Override
@@ -142,8 +147,8 @@ public class MainActivity extends Activity {
             }
 
             VideoEncodeConfig video = createVideoConfig();
-            AudioEncodeConfig audio = createAudioConfig();
-            if (video == null || audio == null) {
+            AudioEncodeConfig audio = createAudioConfig(); // audio can be null
+            if (video == null) {
                 toast("Create ScreenRecorder failure");
                 mediaProjection.stop();
                 return;
@@ -207,6 +212,7 @@ public class MainActivity extends Activity {
     }
 
     private AudioEncodeConfig createAudioConfig() {
+        if (!mAudioToggle.isChecked()) return null;
         String codec = getSelectedAudioCodec();
         if (codec == null) {
             return null;
@@ -246,11 +252,14 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == REQUEST_PERMISSIONS) {
-            // we request 2 permissions
-            if (grantResults.length == 2
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            int granted = PackageManager.PERMISSION_GRANTED;
+            for (int r : grantResults) {
+                granted |= r;
+            }
+            if (granted == PackageManager.PERMISSION_GRANTED) {
                 startCaptureIntent();
+            } else {
+                toast("No Permission!");
             }
         }
     }
@@ -284,6 +293,12 @@ public class MainActivity extends Activity {
         mAudioSampleRate = findViewById(R.id.sample_rate);
         mAudioProfile = findViewById(R.id.aac_profile);
         mAudioChannelCount = findViewById(R.id.audio_channel_count);
+
+        mAudioToggle = findViewById(R.id.with_audio);
+        mAudioToggle.setOnCheckedChangeListener((buttonView, isChecked) ->
+                findViewById(R.id.audio_format_chooser)
+                        .setVisibility(isChecked ? View.VISIBLE : View.GONE)
+        );
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             mOrientation.setSelectedPosition(1);
@@ -351,16 +366,22 @@ public class MainActivity extends Activity {
 
     @TargetApi(M)
     private void requestPermissions() {
-        if (!shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE)
-                && !shouldShowRequestPermissionRationale(RECORD_AUDIO)) {
-            requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, REQUEST_PERMISSIONS);
+        String[] permissions = mAudioToggle.isChecked()
+                ? new String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}
+                : new String[]{WRITE_EXTERNAL_STORAGE};
+        boolean showRationale = false;
+        for (String perm : permissions) {
+            showRationale |= shouldShowRequestPermissionRationale(perm);
+        }
+        if (!showRationale) {
+            requestPermissions(permissions, REQUEST_PERMISSIONS);
             return;
         }
         new AlertDialog.Builder(this)
                 .setMessage("Using your mic to record audio and your sd card to save video file")
                 .setCancelable(false)
                 .setPositiveButton(android.R.string.ok, (dialog, which) ->
-                        requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, REQUEST_PERMISSIONS))
+                        requestPermissions(permissions, REQUEST_PERMISSIONS))
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
                 .show();
@@ -369,7 +390,7 @@ public class MainActivity extends Activity {
     private boolean hasPermissions() {
         PackageManager pm = getPackageManager();
         String packageName = getPackageName();
-        int granted = pm.checkPermission(RECORD_AUDIO, packageName)
+        int granted = (mAudioToggle.isChecked() ? pm.checkPermission(RECORD_AUDIO, packageName) : PackageManager.PERMISSION_GRANTED)
                 | pm.checkPermission(WRITE_EXTERNAL_STORAGE, packageName);
         return granted == PackageManager.PERMISSION_GRANTED;
     }
@@ -787,6 +808,7 @@ public class MainActivity extends Activity {
         }) {
             saveSelectionToPreferences(edit, spinner);
         }
+        edit.putBoolean(getResources().getResourceEntryName(mAudioToggle.getId()), mAudioToggle.isChecked());
         edit.apply();
     }
 
@@ -817,7 +839,7 @@ public class MainActivity extends Activity {
             if (ACTION_STOP.equals(intent.getAction())) {
                 stopRecorder();
             }
-            Toast.makeText(context, "Recorder stopped!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Recorder stopped!\n Saved file " + file, Toast.LENGTH_LONG).show();
             StrictMode.VmPolicy vmPolicy = StrictMode.getVmPolicy();
             try {
                 // disable detecting FileUriExposure on public file

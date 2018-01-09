@@ -90,7 +90,7 @@ public class ScreenRecorder {
         mMediaProjection = mp;
         mDstPath = dstPath;
         mVideoEncoder = new VideoEncoder(video);
-        mAudioEncoder = new MicRecorder(audio);
+        mAudioEncoder = audio == null ? null : new MicRecorder(audio);
 
     }
 
@@ -331,12 +331,13 @@ public class ScreenRecorder {
     }
 
     private void startMuxerIfReady() {
-        if (mMuxerStarted || mVideoOutputFormat == null || mAudioOutputFormat == null) {
+        if (mMuxerStarted || mVideoOutputFormat == null
+                || (mAudioEncoder != null && mAudioOutputFormat == null)) {
             return;
         }
 
         mVideoTrackIndex = mMuxer.addTrack(mVideoOutputFormat);
-        mAudioTrackIndex = mMuxer.addTrack(mAudioOutputFormat);
+        mAudioTrackIndex = mAudioEncoder == null ? INVALID_INDEX : mMuxer.addTrack(mAudioOutputFormat);
         mMuxer.start();
         mMuxerStarted = true;
         if (VERBOSE) Log.i(TAG, "Started media muxer, videoIndex=" + mVideoTrackIndex);
@@ -349,9 +350,11 @@ public class ScreenRecorder {
             int index = mPendingVideoEncoderBufferIndices.poll();
             muxVideo(index, info);
         }
-        while ((info = mPendingAudioEncoderBufferInfos.poll()) != null) {
-            int index = mPendingAudioEncoderBufferIndices.poll();
-            muxAudio(index, info);
+        if (mAudioEncoder != null) {
+            while ((info = mPendingAudioEncoderBufferInfos.poll()) != null) {
+                int index = mPendingAudioEncoderBufferIndices.poll();
+                muxAudio(index, info);
+            }
         }
         if (VERBOSE) Log.i(TAG, "Mux pending video output buffers done.");
     }
@@ -390,6 +393,8 @@ public class ScreenRecorder {
     }
 
     private void prepareAudioEncoder() throws IOException {
+        final MicRecorder micRecorder = mAudioEncoder;
+        if (micRecorder == null) return;
         AudioEncoder.Callback callback = new AudioEncoder.Callback() {
             boolean ranIntoError = false;
 
@@ -422,8 +427,8 @@ public class ScreenRecorder {
 
 
         };
-        mAudioEncoder.setCallback(callback);
-        mAudioEncoder.prepare();
+        micRecorder.setCallback(callback);
+        micRecorder.prepare();
     }
 
     private void signalStop(boolean stopWithEOS) {
