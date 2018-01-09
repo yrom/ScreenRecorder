@@ -18,7 +18,6 @@ package net.yrom.screenrecorder;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.media.AudioTimestamp;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaRecorder;
@@ -177,6 +176,7 @@ class MicRecorder implements Encoder {
                     if (r == null) {
                         Log.e(TAG, "create audio record failure");
                         mCallbackDelegate.onError(MicRecorder.this, new IllegalArgumentException());
+                        break;
                     } else {
                         r.startRecording();
                         mMic = r;
