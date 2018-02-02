@@ -307,19 +307,15 @@ public class MainActivity extends Activity {
         mVideoCodec.setOnItemSelectedListener((view, position) -> onVideoCodecSelected(view.getSelectedItem()));
         mAudioCodec.setOnItemSelectedListener((view, position) -> onAudioCodecSelected(view.getSelectedItem()));
         mVieoResolution.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onResolutionChanged(position, view.getSelectedItem());
         });
         mVideoFramerate.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onFramerateChanged(position, view.getSelectedItem());
         });
         mVideoBitrate.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onBitrateChanged(position, view.getSelectedItem());
         });
         mOrientation.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onOrientationChanged(position, view.getSelectedItem());
         });
     }
@@ -461,7 +457,7 @@ public class MainActivity extends Activity {
         int current = getResources().getConfiguration().orientation;
         if (isLandscape && current == Configuration.ORIENTATION_PORTRAIT) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else if (!isLandscape && current == Configuration.ORIENTATION_PORTRAIT) {
+        } else if (!isLandscape && current == Configuration.ORIENTATION_LANDSCAPE) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
