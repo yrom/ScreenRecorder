@@ -79,7 +79,10 @@ abstract class BaseEncoder implements Encoder {
         String mimeType = format.getString(MediaFormat.KEY_MIME);
         final MediaCodec encoder = createEncoder(mimeType);
         try {
-            encoder.setCallback(this.mCallback == null ? null : mCodecCallback);
+            if (this.mCallback != null) {
+                // NOTE: MediaCodec maybe crash on some devices due to null callback
+                encoder.setCallback(mCodecCallback);
+            }
             encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             onEncoderConfigured(encoder);
             encoder.start();
