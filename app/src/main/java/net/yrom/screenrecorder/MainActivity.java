@@ -46,6 +46,7 @@ import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import net.yrom.screenrecorder.floatball.FloatHelper;
 import net.yrom.screenrecorder.view.NamedSpinner;
 
 import java.io.File;
@@ -96,6 +97,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FloatHelper.init(this);
+        IntentFilter filter = new IntentFilter(ACTION_STOP);
+        filter.addAction(ACTION_START);
+        registerReceiver(mStopActionReceiver, filter);
         mMediaProjectionManager = (MediaProjectionManager) getApplicationContext().getSystemService(MEDIA_PROJECTION_SERVICE);
         mNotifications = new Notifications(getApplicationContext());
         bindViews();
@@ -267,8 +272,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            unregisterReceiver(mStopActionReceiver);
+        } catch (Exception e) {
+            //ignored
+        }
         saveSelections();
         stopRecorder();
+        FloatHelper.clear(this);
     }
 
     private void startCaptureIntent() {
@@ -307,19 +318,15 @@ public class MainActivity extends Activity {
         mVideoCodec.setOnItemSelectedListener((view, position) -> onVideoCodecSelected(view.getSelectedItem()));
         mAudioCodec.setOnItemSelectedListener((view, position) -> onAudioCodecSelected(view.getSelectedItem()));
         mVieoResolution.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onResolutionChanged(position, view.getSelectedItem());
         });
         mVideoFramerate.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onFramerateChanged(position, view.getSelectedItem());
         });
         mVideoBitrate.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onBitrateChanged(position, view.getSelectedItem());
         });
         mOrientation.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onOrientationChanged(position, view.getSelectedItem());
         });
     }
@@ -340,7 +347,6 @@ public class MainActivity extends Activity {
         if (mRecorder == null) return;
         mRecorder.start();
         mButton.setText("Stop Recorder");
-        registerReceiver(mStopActionReceiver, new IntentFilter(ACTION_STOP));
         moveTaskToBack(true);
     }
 
@@ -351,11 +357,6 @@ public class MainActivity extends Activity {
         }
         mRecorder = null;
         mButton.setText("Restart recorder");
-        try {
-            unregisterReceiver(mStopActionReceiver);
-        } catch (Exception e) {
-            //ignored
-        }
     }
 
     private void cancelRecorder() {
@@ -461,7 +462,7 @@ public class MainActivity extends Activity {
         int current = getResources().getConfiguration().orientation;
         if (isLandscape && current == Configuration.ORIENTATION_PORTRAIT) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else if (!isLandscape && current == Configuration.ORIENTATION_PORTRAIT) {
+        } else if (!isLandscape && current == Configuration.ORIENTATION_LANDSCAPE) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
@@ -830,23 +831,28 @@ public class MainActivity extends Activity {
         }
     }
 
-    static final String ACTION_STOP = "net.yrom.screenrecorder.action.STOP";
+    public static final String ACTION_STOP = "net.yrom.screenrecorder.action.STOP";
+    public static final String ACTION_START = "net.yrom.screenrecorder.action.START";
 
     private BroadcastReceiver mStopActionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            File file = new File(mRecorder.getSavedPath());
-            if (ACTION_STOP.equals(intent.getAction())) {
-                stopRecorder();
-            }
-            Toast.makeText(context, "Recorder stopped!\n Saved file " + file, Toast.LENGTH_LONG).show();
-            StrictMode.VmPolicy vmPolicy = StrictMode.getVmPolicy();
-            try {
-                // disable detecting FileUriExposure on public file
-                StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().build());
-                viewResult(file);
-            } finally {
-                StrictMode.setVmPolicy(vmPolicy);
+            if (ACTION_START.equals(intent.getAction())) {
+                onButtonClick(null);
+            }else {
+                File file = new File(mRecorder.getSavedPath());
+                if (ACTION_STOP.equals(intent.getAction())) {
+                    stopRecorder();
+                }
+                Toast.makeText(context, "Recorder stopped!\n Saved file " + file, Toast.LENGTH_LONG).show();
+                StrictMode.VmPolicy vmPolicy = StrictMode.getVmPolicy();
+                try {
+                    // disable detecting FileUriExposure on public file
+                    StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().build());
+                    viewResult(file);
+                } finally {
+                    StrictMode.setVmPolicy(vmPolicy);
+                }
             }
         }
 

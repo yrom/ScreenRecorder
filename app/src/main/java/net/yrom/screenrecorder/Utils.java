@@ -16,6 +16,7 @@
 
 package net.yrom.screenrecorder;
 
+import android.content.Context;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.os.AsyncTask;
@@ -26,7 +27,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-class Utils {
+public class Utils {
 
 
     interface Callback {
@@ -243,4 +244,14 @@ class Utils {
         }
 
     }
+
+    public static int getStatusBarHeight(Context context) {
+        int result = 0;
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
 }
