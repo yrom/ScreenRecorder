@@ -207,6 +207,4 @@ abstract class BaseEncoder implements Encoder {
             mCallback.onOutputFormatChanged(BaseEncoder.this, format);
         }
     };
-
-
 }

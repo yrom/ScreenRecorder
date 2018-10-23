@@ -28,7 +28,6 @@ import java.util.List;
 
 class Utils {
 
-
     interface Callback {
         void onResult(MediaCodecInfo[] infos);
     }
@@ -77,14 +76,12 @@ class Utils {
             infos.add(info);
         }
 
-        return infos.toArray(new MediaCodecInfo[infos.size()]);
+        return infos.toArray(new MediaCodecInfo[0]);
     }
-
 
     static SparseArray<String> sAACProfiles = new SparseArray<>();
     static SparseArray<String> sAVCProfiles = new SparseArray<>();
     static SparseArray<String> sAVCLevels = new SparseArray<>();
-
 
     /**
      * @param avcProfileLevel AVC CodecProfileLevel
@@ -200,7 +197,6 @@ class Utils {
         }
     }
 
-
     static SparseArray<String> sColorFormats = new SparseArray<>();
 
     static String toHumanReadable(int colorFormat) {
@@ -241,6 +237,5 @@ class Utils {
                 }
             }
         }
-
     }
 }

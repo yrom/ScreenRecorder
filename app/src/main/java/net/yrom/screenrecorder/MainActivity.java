@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
     private MediaProjectionManager mMediaProjectionManager;
     private Button mButton;
     private ToggleButton mAudioToggle;
-    private NamedSpinner mVieoResolution;
+    private NamedSpinner mVideoResolution;
     private NamedSpinner mVideoFramerate;
     private NamedSpinner mIFrameInterval;
     private NamedSpinner mVideoBitrate;
@@ -96,7 +96,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mMediaProjectionManager = (MediaProjectionManager) getApplicationContext().getSystemService(MEDIA_PROJECTION_SERVICE);
+        mMediaProjectionManager =
+                (MediaProjectionManager) getApplicationContext().getSystemService(MEDIA_PROJECTION_SERVICE);
         mNotifications = new Notifications(getApplicationContext());
         bindViews();
 
@@ -105,7 +106,7 @@ public class MainActivity extends Activity {
             mAvcCodecInfos = infos;
             SpinnerAdapter codecsAdapter = createCodecsAdapter(mAvcCodecInfos);
             mVideoCodec.setAdapter(codecsAdapter);
-            restoreSelections(mVideoCodec, mVieoResolution, mVideoFramerate, mIFrameInterval, mVideoBitrate);
+            restoreSelections(mVideoCodec, mVideoResolution, mVideoFramerate, mIFrameInterval, mVideoBitrate);
 
         });
         Utils.findEncodersByTypeAsync(AUDIO_AAC, infos -> {
@@ -281,7 +282,7 @@ public class MainActivity extends Activity {
         mButton.setOnClickListener(this::onButtonClick);
 
         mVideoCodec = findViewById(R.id.video_codec);
-        mVieoResolution = findViewById(R.id.resolution);
+        mVideoResolution = findViewById(R.id.resolution);
         mVideoFramerate = findViewById(R.id.framerate);
         mIFrameInterval = findViewById(R.id.iframe_interval);
         mVideoBitrate = findViewById(R.id.video_bitrate);
@@ -306,7 +307,7 @@ public class MainActivity extends Activity {
 
         mVideoCodec.setOnItemSelectedListener((view, position) -> onVideoCodecSelected(view.getSelectedItem()));
         mAudioCodec.setOnItemSelectedListener((view, position) -> onAudioCodecSelected(view.getSelectedItem()));
-        mVieoResolution.setOnItemSelectedListener((view, position) -> {
+        mVideoResolution.setOnItemSelectedListener((view, position) -> {
             if (position == 0) return;
             onResolutionChanged(position, view.getSelectedItem());
         });
@@ -350,7 +351,7 @@ public class MainActivity extends Activity {
             mRecorder.quit();
         }
         mRecorder = null;
-        mButton.setText("Restart recorder");
+        mButton.setText("Restart Recorder");
         try {
             unregisterReceiver(mStopActionReceiver);
         } catch (Exception e) {
@@ -360,7 +361,8 @@ public class MainActivity extends Activity {
 
     private void cancelRecorder() {
         if (mRecorder == null) return;
-        Toast.makeText(this, "Permission denied! Screen recorder is cancel", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Permission denied! Screen recorder is cancel",
+                Toast.LENGTH_SHORT).show();
         stopRecorder();
     }
 
@@ -390,7 +392,8 @@ public class MainActivity extends Activity {
     private boolean hasPermissions() {
         PackageManager pm = getPackageManager();
         String packageName = getPackageName();
-        int granted = (mAudioToggle.isChecked() ? pm.checkPermission(RECORD_AUDIO, packageName) : PackageManager.PERMISSION_GRANTED)
+        int granted = (mAudioToggle.isChecked() ? pm.checkPermission(RECORD_AUDIO, packageName) :
+                PackageManager.PERMISSION_GRANTED)
                 | pm.checkPermission(WRITE_EXTERNAL_STORAGE, packageName);
         return granted == PackageManager.PERMISSION_GRANTED;
     }
@@ -410,14 +413,14 @@ public class MainActivity extends Activity {
         double selectedFramerate = getSelectedFramerate();
         int resetPos = Math.max(selectedPosition - 1, 0);
         if (!videoCapabilities.isSizeSupported(width, height)) {
-            mVieoResolution.setSelectedPosition(resetPos);
+            mVideoResolution.setSelectedPosition(resetPos);
             toast("codec '%s' unsupported size %dx%d (%s)",
                     codecName, width, height, mOrientation.getSelectedItem());
             Log.w("@@", codecName +
                     " height range: " + videoCapabilities.getSupportedHeights() +
                     "\n width range: " + videoCapabilities.getSupportedHeights());
         } else if (!videoCapabilities.areSizeAndRateSupported(width, height, selectedFramerate)) {
-            mVieoResolution.setSelectedPosition(resetPos);
+            mVideoResolution.setSelectedPosition(resetPos);
             toast("codec '%s' unsupported size %dx%d(%s)\nwith framerate %d",
                     codecName, width, height, mOrientation.getSelectedItem(), (int) selectedFramerate);
         }
@@ -450,9 +453,9 @@ public class MainActivity extends Activity {
         boolean isLandscape = selectedPosition == 1;
         int width = selectedWithHeight[isLandscape ? 0 : 1];
         int height = selectedWithHeight[isLandscape ? 1 : 0];
-        int resetPos = Math.max(mVieoResolution.getSelectedItemPosition() - 1, 0);
+        int resetPos = Math.max(mVideoResolution.getSelectedItemPosition() - 1, 0);
         if (!videoCapabilities.isSizeSupported(width, height)) {
-            mVieoResolution.setSelectedPosition(resetPos);
+            mVideoResolution.setSelectedPosition(resetPos);
             toast("codec '%s' unsupported size %dx%d (%s)",
                     codecName, width, height, orientation);
             return;
@@ -515,8 +518,9 @@ public class MainActivity extends Activity {
         }
 
         SpinnerAdapter old = mVideoProfileLevel.getAdapter();
-        if (old == null || !(old instanceof ArrayAdapter)) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        if (!(old instanceof ArrayAdapter)) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_item, new ArrayList<>());
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             adapter.addAll(profileLevels);
             mVideoProfileLevel.setAdapter(adapter);
@@ -548,8 +552,9 @@ public class MainActivity extends Activity {
     private void resetAacProfileAdapter(MediaCodecInfo.CodecCapabilities capabilities) {
         String[] profiles = Utils.aacProfiles();
         SpinnerAdapter old = mAudioProfile.getAdapter();
-        if (old == null || !(old instanceof ArrayAdapter)) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        if (!(old instanceof ArrayAdapter)) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_item, new ArrayList<>());
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             adapter.addAll(profiles);
             mAudioProfile.setAdapter(adapter);
@@ -576,8 +581,9 @@ public class MainActivity extends Activity {
         }
 
         SpinnerAdapter old = mAudioSampleRate.getAdapter();
-        if (old == null || !(old instanceof ArrayAdapter)) {
-            ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        if (!(old instanceof ArrayAdapter)) {
+            ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_item, new ArrayList<>());
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             adapter.addAll(rates);
             mAudioSampleRate.setAdapter(adapter);
@@ -602,8 +608,9 @@ public class MainActivity extends Activity {
         rates.add(upper);
 
         SpinnerAdapter old = mAudioBitrate.getAdapter();
-        if (old == null || !(old instanceof ArrayAdapter)) {
-            ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        if (!(old instanceof ArrayAdapter)) {
+            ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_item, new ArrayList<>());
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             adapter.addAll(rates);
             mAudioBitrate.setAdapter(adapter);
@@ -623,8 +630,7 @@ public class MainActivity extends Activity {
             mAvcCodecInfos = Utils.findEncodersByType(VIDEO_AVC);
         }
         MediaCodecInfo codec = null;
-        for (int i = 0; i < mAvcCodecInfos.length; i++) {
-            MediaCodecInfo info = mAvcCodecInfos[i];
+        for (MediaCodecInfo info : mAvcCodecInfos) {
             if (info.getName().equals(codecName)) {
                 codec = info;
                 break;
@@ -640,8 +646,7 @@ public class MainActivity extends Activity {
             mAacCodecInfos = Utils.findEncodersByType(AUDIO_AAC);
         }
         MediaCodecInfo codec = null;
-        for (int i = 0; i < mAacCodecInfos.length; i++) {
-            MediaCodecInfo info = mAacCodecInfos[i];
+        for (MediaCodecInfo info : mAacCodecInfos) {
             if (info.getName().equals(codecName)) {
                 codec = info;
                 break;
@@ -656,7 +661,8 @@ public class MainActivity extends Activity {
     }
 
     private SpinnerAdapter createCodecsAdapter(MediaCodecInfo[] codecInfos) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, codecInfoNames(codecInfos));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, codecInfoNames(codecInfos));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         return adapter;
     }
@@ -685,8 +691,8 @@ public class MainActivity extends Activity {
     }
 
     private int[] getSelectedWithHeight() {
-        if (mVieoResolution == null) throw new IllegalStateException();
-        String selected = mVieoResolution.getSelectedItem();
+        if (mVideoResolution == null) throw new IllegalStateException();
+        String selected = mVideoResolution.getSelectedItem();
         String[] xes = selected.split("x");
         if (xes.length != 2) throw new IllegalArgumentException();
         return new int[]{Integer.parseInt(xes[0]), Integer.parseInt(xes[1])};
@@ -705,8 +711,7 @@ public class MainActivity extends Activity {
 
     private int getSelectedAudioSampleRate() {
         if (mAudioSampleRate == null) throw new IllegalStateException();
-        Integer selectedItem = mAudioSampleRate.getSelectedItem();
-        return selectedItem;
+        return mAudioSampleRate.getSelectedItem();
     }
 
     private int getSelectedAudioProfile() {
@@ -795,7 +800,7 @@ public class MainActivity extends Activity {
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor edit = preferences.edit();
         for (NamedSpinner spinner : new NamedSpinner[]{
-                mVieoResolution,
+                mVideoResolution,
                 mVideoFramerate,
                 mIFrameInterval,
                 mVideoBitrate,

@@ -30,7 +30,6 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseLongArray;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -56,7 +55,6 @@ class MicRecorder implements Encoder {
     private AudioRecord mMic; // access in mRecordThread only!
     private int mSampleRate;
     private int mChannelConfig;
-    private int mFormat = AudioFormat.ENCODING_PCM_16BIT;
 
     private AtomicBoolean mForceStop = new AtomicBoolean(false);
     private BaseEncoder.Callback mCallback;
@@ -82,7 +80,7 @@ class MicRecorder implements Encoder {
     }
 
     @Override
-    public void prepare() throws IOException {
+    public void prepare() {
         Looper myLooper = Objects.requireNonNull(Looper.myLooper(), "Should prepare in HandlerThread");
         // run callback in caller thread
         mCallbackDelegate = new CallbackDelegate(myLooper, mCallback);
@@ -170,6 +168,7 @@ class MicRecorder implements Encoder {
 
         @Override
         public void handleMessage(Message msg) {
+            int mFormat = AudioFormat.ENCODING_PCM_16BIT;
             switch (msg.what) {
                 case MSG_PREPARE:
                     AudioRecord r = createAudioRecord(mSampleRate, mChannelConfig, mFormat);

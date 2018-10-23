@@ -64,6 +64,4 @@ class VideoEncoder extends BaseEncoder {
         }
         super.release();
     }
-
-
 }
