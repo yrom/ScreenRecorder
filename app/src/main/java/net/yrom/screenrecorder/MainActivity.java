@@ -246,7 +246,7 @@ public class MainActivity extends Activity {
 
     private static File getSavingDir() {
         return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
-                "ScreenCaptures");
+                "Screenshots");
     }
 
     @Override
@@ -307,26 +307,22 @@ public class MainActivity extends Activity {
         mVideoCodec.setOnItemSelectedListener((view, position) -> onVideoCodecSelected(view.getSelectedItem()));
         mAudioCodec.setOnItemSelectedListener((view, position) -> onAudioCodecSelected(view.getSelectedItem()));
         mVieoResolution.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onResolutionChanged(position, view.getSelectedItem());
         });
         mVideoFramerate.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onFramerateChanged(position, view.getSelectedItem());
         });
         mVideoBitrate.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onBitrateChanged(position, view.getSelectedItem());
         });
         mOrientation.setOnItemSelectedListener((view, position) -> {
-            if (position == 0) return;
             onOrientationChanged(position, view.getSelectedItem());
         });
     }
 
     private void onButtonClick(View v) {
         if (mRecorder != null) {
-            stopRecorder();
+            stopRecordingAndOpenFile(v.getContext());
         } else if (hasPermissions()) {
             startCaptureIntent();
         } else if (Build.VERSION.SDK_INT >= M) {
@@ -461,7 +457,7 @@ public class MainActivity extends Activity {
         int current = getResources().getConfiguration().orientation;
         if (isLandscape && current == Configuration.ORIENTATION_PORTRAIT) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else if (!isLandscape && current == Configuration.ORIENTATION_PORTRAIT) {
+        } else if (!isLandscape && current == Configuration.ORIENTATION_LANDSCAPE) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
@@ -830,35 +826,39 @@ public class MainActivity extends Activity {
         }
     }
 
-    static final String ACTION_STOP = "net.yrom.screenrecorder.action.STOP";
+    private void stopRecordingAndOpenFile(Context context) {
+        File file = new File(mRecorder.getSavedPath());
+        stopRecorder();
+        Toast.makeText(context, "Recorder stopped!\n Saved file " + file, Toast.LENGTH_LONG).show();
+        StrictMode.VmPolicy vmPolicy = StrictMode.getVmPolicy();
+        try {
+            // disable detecting FileUriExposure on public file
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().build());
+            viewResult(file);
+        } finally {
+            StrictMode.setVmPolicy(vmPolicy);
+        }
+    }
+
+    private void viewResult(File file) {
+        Intent view = new Intent(Intent.ACTION_VIEW);
+        view.addCategory(Intent.CATEGORY_DEFAULT);
+        view.setDataAndType(Uri.fromFile(file), VIDEO_AVC);
+        view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(view);
+        } catch (ActivityNotFoundException e) {
+            // no activity can open this video
+        }
+    }
+
+    static final String ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP";
 
     private BroadcastReceiver mStopActionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            File file = new File(mRecorder.getSavedPath());
             if (ACTION_STOP.equals(intent.getAction())) {
-                stopRecorder();
-            }
-            Toast.makeText(context, "Recorder stopped!\n Saved file " + file, Toast.LENGTH_LONG).show();
-            StrictMode.VmPolicy vmPolicy = StrictMode.getVmPolicy();
-            try {
-                // disable detecting FileUriExposure on public file
-                StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().build());
-                viewResult(file);
-            } finally {
-                StrictMode.setVmPolicy(vmPolicy);
-            }
-        }
-
-        private void viewResult(File file) {
-            Intent view = new Intent(Intent.ACTION_VIEW);
-            view.addCategory(Intent.CATEGORY_DEFAULT);
-            view.setDataAndType(Uri.fromFile(file), VIDEO_AVC);
-            view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                startActivity(view);
-            } catch (ActivityNotFoundException e) {
-                // no activity can open this video
+                stopRecordingAndOpenFile(context);
             }
         }
     };
