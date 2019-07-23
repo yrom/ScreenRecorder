@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "net.yrom.screenrecorder.demo"
         minSdkVersion 21
-        targetSdkVersion 27
-        versionCode 13
-        versionName '2.4'
+        targetSdkVersion 28
+        versionCode 14
+        versionName '2.4.1'
     }
 
     compileOptions {
