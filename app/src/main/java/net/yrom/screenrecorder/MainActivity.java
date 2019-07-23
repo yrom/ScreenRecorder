@@ -27,6 +27,9 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Point;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodecInfo;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
@@ -34,6 +37,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
@@ -91,7 +95,8 @@ public class MainActivity extends Activity {
      * instead of a foreground Activity in this demonstrate.
      */
     private ScreenRecorder mRecorder;
-
+    private MediaProjection mMediaProjection;
+    private VirtualDisplay mVirtualDisplay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,36 +151,50 @@ public class MainActivity extends Activity {
                 return;
             }
 
-            VideoEncodeConfig video = createVideoConfig();
-            AudioEncodeConfig audio = createAudioConfig(); // audio can be null
-            if (video == null) {
-                toast("Create ScreenRecorder failure");
-                mediaProjection.stop();
-                return;
-            }
-
-            File dir = getSavingDir();
-            if (!dir.exists() && !dir.mkdirs()) {
-                cancelRecorder();
-                return;
-            }
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
-            final File file = new File(dir, "Screen-" + format.format(new Date())
-                    + "-" + video.width + "x" + video.height + ".mp4");
-            Log.d("@@", "Create recorder with :" + video + " \n " + audio + "\n " + file);
-            mRecorder = newRecorder(mediaProjection, video, audio, file);
-            if (hasPermissions()) {
-                startRecorder();
-            } else {
-                cancelRecorder();
-            }
+            mMediaProjection = mediaProjection;
+            mMediaProjection.registerCallback(mProjectionCallback, new Handler());
+            startCapturing(mediaProjection);
         }
     }
 
+    private void startCapturing(MediaProjection mediaProjection) {
+        VideoEncodeConfig video = createVideoConfig();
+        AudioEncodeConfig audio = createAudioConfig(); // audio can be null
+        if (video == null) {
+            toast("Create ScreenRecorder failure");
+            return;
+        }
+
+        File dir = getSavingDir();
+        if (!dir.exists() && !dir.mkdirs()) {
+            cancelRecorder();
+            return;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
+        final File file = new File(dir, "Screenshots-" + format.format(new Date())
+                + "-" + video.width + "x" + video.height + ".mp4");
+        Log.d("@@", "Create recorder with :" + video + " \n " + audio + "\n " + file);
+        mRecorder = newRecorder(mediaProjection, video, audio, file);
+        if (hasPermissions()) {
+            startRecorder();
+        } else {
+            cancelRecorder();
+        }
+    }
+
+    private MediaProjection.Callback mProjectionCallback = new MediaProjection.Callback() {
+        @Override
+        public void onStop() {
+            if (mRecorder != null) {
+                stopRecorder();
+            }
+        }
+    };
+
     private ScreenRecorder newRecorder(MediaProjection mediaProjection, VideoEncodeConfig video,
                                        AudioEncodeConfig audio, File output) {
-        ScreenRecorder r = new ScreenRecorder(video, audio,
-                1, mediaProjection, output.getAbsolutePath());
+        final VirtualDisplay display = getOrCreateVirtualDisplay(mediaProjection, video);
+        ScreenRecorder r = new ScreenRecorder(video, audio, display , output.getAbsolutePath());
         r.setCallback(new ScreenRecorder.Callback() {
             long startTime = 0;
 
@@ -209,6 +228,24 @@ public class MainActivity extends Activity {
             }
         });
         return r;
+    }
+
+
+    private VirtualDisplay getOrCreateVirtualDisplay(MediaProjection mediaProjection, VideoEncodeConfig config) {
+        if (mVirtualDisplay == null) {
+            mVirtualDisplay = mediaProjection.createVirtualDisplay("ScreenRecorder-display0",
+                    config.width, config.height, 1 /*dpi*/,
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+                    null /*surface*/, null, null);
+        } else {
+            // resize if size not matched
+            Point size = new Point();
+            mVirtualDisplay.getDisplay().getSize(size);
+            if (size.x != config.width || size.y != config.height) {
+                mVirtualDisplay.resize(config.width, config.height, 1);
+            }
+        }
+        return mVirtualDisplay;
     }
 
     private AudioEncodeConfig createAudioConfig() {
@@ -257,7 +294,7 @@ public class MainActivity extends Activity {
                 granted |= r;
             }
             if (granted == PackageManager.PERMISSION_GRANTED) {
-                startCaptureIntent();
+                requestMediaProjection();
             } else {
                 toast("No Permission!");
             }
@@ -269,9 +306,19 @@ public class MainActivity extends Activity {
         super.onDestroy();
         saveSelections();
         stopRecorder();
+        if (mVirtualDisplay != null) {
+            mVirtualDisplay.setSurface(null);
+            mVirtualDisplay.release();
+            mVirtualDisplay = null;
+        }
+        if (mMediaProjection != null) {
+            mMediaProjection.unregisterCallback(mProjectionCallback);
+            mMediaProjection.stop();
+            mMediaProjection = null;
+        }
     }
 
-    private void startCaptureIntent() {
+    private void requestMediaProjection() {
         Intent captureIntent = mMediaProjectionManager.createScreenCaptureIntent();
         startActivityForResult(captureIntent, REQUEST_MEDIA_PROJECTION);
     }
@@ -324,7 +371,11 @@ public class MainActivity extends Activity {
         if (mRecorder != null) {
             stopRecordingAndOpenFile(v.getContext());
         } else if (hasPermissions()) {
-            startCaptureIntent();
+            if (mMediaProjection == null) {
+                requestMediaProjection();
+            } else {
+                startCapturing(mMediaProjection);
+            }
         } else if (Build.VERSION.SDK_INT >= M) {
             requestPermissions();
         } else {

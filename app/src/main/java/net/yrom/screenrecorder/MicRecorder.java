@@ -93,8 +93,10 @@ class MicRecorder implements Encoder {
 
     @Override
     public void stop() {
-        // clear callback queue
-        mCallbackDelegate.removeCallbacksAndMessages(null);
+        if (mCallbackDelegate != null) {
+            // clear callback queue
+            mCallbackDelegate.removeCallbacksAndMessages(null);
+        }
         mForceStop.set(true);
         if (mRecordHandler != null) mRecordHandler.sendEmptyMessage(MSG_STOP);
     }

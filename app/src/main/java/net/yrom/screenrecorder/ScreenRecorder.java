@@ -16,17 +16,16 @@
 
 package net.yrom.screenrecorder;
 
-import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
-import android.media.projection.MediaProjection;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -45,11 +44,7 @@ public class ScreenRecorder {
     private static final int INVALID_INDEX = -1;
     static final String VIDEO_AVC = MIMETYPE_VIDEO_AVC; // H.264 Advanced Video Coding
     static final String AUDIO_AAC = MIMETYPE_AUDIO_AAC; // H.264 Advanced Audio Coding
-    private int mWidth;
-    private int mHeight;
-    private int mDpi;
     private String mDstPath;
-    private MediaProjection mMediaProjection;
     private VideoEncoder mVideoEncoder;
     private MicRecorder mAudioEncoder;
 
@@ -61,12 +56,6 @@ public class ScreenRecorder {
     private AtomicBoolean mForceQuit = new AtomicBoolean(false);
     private AtomicBoolean mIsRunning = new AtomicBoolean(false);
     private VirtualDisplay mVirtualDisplay;
-    private MediaProjection.Callback mProjectionCallback = new MediaProjection.Callback() {
-        @Override
-        public void onStop() {
-            quit();
-        }
-    };
 
     private HandlerThread mWorker;
     private CallbackHandler mHandler;
@@ -78,20 +67,17 @@ public class ScreenRecorder {
     private LinkedList<MediaCodec.BufferInfo> mPendingVideoEncoderBufferInfos = new LinkedList<>();
 
     /**
-     * @param dpi for {@link VirtualDisplay}
+     * @param display for {@link VirtualDisplay#setSurface(Surface)}
+     * @param dstPath saving path
      */
     public ScreenRecorder(VideoEncodeConfig video,
                           AudioEncodeConfig audio,
-                          int dpi, MediaProjection mp,
+                          VirtualDisplay display,
                           String dstPath) {
-        mWidth = video.width;
-        mHeight = video.height;
-        mDpi = dpi;
-        mMediaProjection = mp;
+        mVirtualDisplay = display;
         mDstPath = dstPath;
         mVideoEncoder = new VideoEncoder(video);
         mAudioEncoder = audio == null ? null : new MicRecorder(audio);
-
     }
 
     /**
@@ -186,12 +172,11 @@ public class ScreenRecorder {
         if (mIsRunning.get() || mForceQuit.get()) {
             throw new IllegalStateException();
         }
-        if (mMediaProjection == null) {
+        if (mVirtualDisplay == null) {
             throw new IllegalStateException("maybe release");
         }
         mIsRunning.set(true);
 
-        mMediaProjection.registerCallback(mProjectionCallback, mHandler);
         try {
             // create muxer
             mMuxer = new MediaMuxer(mDstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
@@ -202,10 +187,9 @@ public class ScreenRecorder {
             throw new RuntimeException(e);
         }
 
-        mVirtualDisplay = mMediaProjection.createVirtualDisplay(TAG + "-display",
-                mWidth, mHeight, mDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
-                mVideoEncoder.getInputSurface(), null, null);
-        if (VERBOSE) Log.d(TAG, "created virtual display: " + mVirtualDisplay.getDisplay());
+        // "turn on" VirtualDisplay after VideoEncoder prepared
+        mVirtualDisplay.setSurface(mVideoEncoder.getInputSurface());
+        if (VERBOSE) Log.d(TAG, "set surface to display: " + mVirtualDisplay.getDisplay());
     }
 
     private void muxVideo(int index, MediaCodec.BufferInfo buffer) {
@@ -457,11 +441,8 @@ public class ScreenRecorder {
     }
 
     private void release() {
-        if (mMediaProjection != null) {
-            mMediaProjection.unregisterCallback(mProjectionCallback);
-        }
         if (mVirtualDisplay != null) {
-            mVirtualDisplay.release();
+            mVirtualDisplay.setSurface(null);
             mVirtualDisplay = null;
         }
 
@@ -482,10 +463,6 @@ public class ScreenRecorder {
             mAudioEncoder = null;
         }
 
-        if (mMediaProjection != null) {
-            mMediaProjection.stop();
-            mMediaProjection = null;
-        }
         if (mMuxer != null) {
             try {
                 mMuxer.stop();
@@ -500,7 +477,7 @@ public class ScreenRecorder {
 
     @Override
     protected void finalize() throws Throwable {
-        if (mMediaProjection != null) {
+        if (mVirtualDisplay != null) {
             Log.e(TAG, "release() not called!");
             release();
         }
