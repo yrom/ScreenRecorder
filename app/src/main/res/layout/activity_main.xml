@@ -21,18 +21,18 @@
                 style="?android:attr/titleTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Video Encode Config (H.264 AVC)" />
+                android:text="@string/video_encode_config_h_264_avc" />
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/video_codec"
-                android:name="Video Encoder"
+                android:name="@string/video_encoder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/resolution"
-                android:name="Resolution"
+                android:name="@string/resolution"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -40,7 +40,7 @@
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/video_bitrate"
-                android:name="Bitrate (kbps)"
+                android:name="@string/bitrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -48,7 +48,7 @@
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/framerate"
-                android:name="Frame Rate (fps)"
+                android:name="@string/frame_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
 
@@ -57,7 +57,7 @@
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/iframe_interval"
-                android:name="I-Frame Interval"
+                android:name="@string/frame_interval"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
 
@@ -66,14 +66,14 @@
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/avc_profile"
-                android:name="AVCProfile"
+                android:name="@string/avc_profle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
             <net.yrom.screenrecorder.view.NamedSpinner
                 android:id="@+id/orientation"
-                android:name="Orientation"
+                android:name="@string/orientation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -90,18 +90,18 @@
                     style="?android:attr/titleTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Audio Encode Config (H.264 AAC)" />
+                    android:text="@string/audio_encode_config_h_264_aac" />
 
                 <net.yrom.screenrecorder.view.NamedSpinner
                     android:id="@+id/audio_codec"
-                    android:name="Audio Encoder"
+                    android:name="@string/audio_encoder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp" />
 
                 <net.yrom.screenrecorder.view.NamedSpinner
                     android:id="@+id/audio_channel_count"
-                    android:name="Channels"
+                    android:name="@string/channels"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -109,21 +109,21 @@
 
                 <net.yrom.screenrecorder.view.NamedSpinner
                     android:id="@+id/sample_rate"
-                    android:name="Sample Rate (HZ)"
+                    android:name="@string/sample_rate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp" />
 
                 <net.yrom.screenrecorder.view.NamedSpinner
                     android:id="@+id/audio_bitrate"
-                    android:name="Bitrate (kbps)"
+                    android:name="@string/bitrate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp" />
 
                 <net.yrom.screenrecorder.view.NamedSpinner
                     android:id="@+id/aac_profile"
-                    android:name="AAC Profile"
+                    android:name="@string/aac_profile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp" />
@@ -138,8 +138,8 @@
         android:layout_above="@+id/record_button"
         android:layout_alignParentEnd="true"
         android:checked="true"
-        android:textOff="Without Audio"
-        android:textOn="With Audio" />
+        android:textOff="@string/without_audio"
+        android:textOn="@string/with_audio" />
 
     <Button
         android:id="@+id/record_button"
@@ -147,5 +147,5 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:text="Start Recorder" />
+        android:text="@string/start_recorder" />
 </RelativeLayout>

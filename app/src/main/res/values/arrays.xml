@@ -43,7 +43,9 @@
         <item>30</item>
     </string-array>
     <string-array name="orientations">
-        <item>Portrait</item>
-        <item>Landscape</item>
+        <item>@string/portrait</item>
+        <item>@string/landscape</item>
     </string-array>
+    <string name="portrait">Portrait</string>
+    <string name="landscape">Landscape</string>
 </resources>

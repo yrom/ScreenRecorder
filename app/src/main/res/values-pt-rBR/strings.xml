@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Gravador de tela</string>
+    <string name="video_encode_config_h_264_avc">Configuração do codificador de vídeo (H.264 AVC)</string>
+    <string name="video_encoder">Codificação do vídeo</string>
+    <string name="resolution">Resolução</string>
+    <string name="bitrate">Taxa de bits (kbps)</string>
+    <string name="frame_rate">Taxa de quadros (fps)</string>
+    <string name="frame_interval">Intervalo de quadros</string>
+    <string name="avc_profle">Perfil AVC</string>
+    <string name="orientation">Orientação</string>
+    <string name="audio_encode_config_h_264_aac">Configuração do codificador de áudio (H.264 AAC)</string>
+    <string name="audio_encoder">Codificação do áudio</string>
+    <string name="channels">Canais</string>
+    <string name="sample_rate">Taxa de amostragem (HZ)</string>
+    <string name="aac_profile">Perfil AAC</string>
+    <string name="without_audio">Com áudio</string>
+    <string name="with_audio">Sem áudio</string>
+    <string name="start_recorder">Iniciar gravador</string>
+    <string name="stop_recorder">Parar gravador</string>
+    <string name="restart_recorder">Reiniciar gravador</string>
+
+
+    <string name="no_permission">Sem Permissão</string>
+    <string name="no_permission_to_write_sd_ard">Sem permissão para gravar no sd card</string>
+    <string name="permission_denied_screen_recorder_cancel">Permissão negada! Cancelando Gravador de Tela</string>
+    <string name="using_your_mic_to_record_audio">Usando seu microfone para gravar o áudio e seu cartão SD para salvar o arquivo de vídeo</string>
+    <string name="codec_unsupported_size_with_framerate">codec \'%s\' não suporta o tamanho %dx%d(%s) com a taxa de quadros %d</string>
+    <string name="codec_unsupported_size">O codec \'%s\' não suporta o tamanho %dx%d (%s)</string>
+    <string name="codec_unsupported_bitrate">O codec \'%s\' não suporta a taxa de bits %d</string>
+    <string name="codec_unsupported_with_framerate">O codec \'%s\'não suporta a taxa de quadros %d</string>
+    <string name="recorder_stopped_saved_file">Gravação encerrada! Arquivo salvo</string>
+    <string name="length_video">Tamanho</string>
+    <string name="gravando">Gravando...</string>
+    <string name="stop">Parar</string>
+    <string name="create_screenRecorder_failure">Falaha ao iniciaro Gravador de Tela</string>
+</resources>
