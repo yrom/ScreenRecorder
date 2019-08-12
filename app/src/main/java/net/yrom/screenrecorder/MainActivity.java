@@ -97,6 +97,7 @@ public class MainActivity extends Activity {
     private ScreenRecorder mRecorder;
     private MediaProjection mMediaProjection;
     private VirtualDisplay mVirtualDisplay;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -161,7 +162,7 @@ public class MainActivity extends Activity {
         VideoEncodeConfig video = createVideoConfig();
         AudioEncodeConfig audio = createAudioConfig(); // audio can be null
         if (video == null) {
-            toast("Create ScreenRecorder failure");
+            toast(getString(R.string.create_screenRecorder_failure));
             return;
         }
 
@@ -194,7 +195,7 @@ public class MainActivity extends Activity {
     private ScreenRecorder newRecorder(MediaProjection mediaProjection, VideoEncodeConfig video,
                                        AudioEncodeConfig audio, File output) {
         final VirtualDisplay display = getOrCreateVirtualDisplay(mediaProjection, video);
-        ScreenRecorder r = new ScreenRecorder(video, audio, display , output.getAbsolutePath());
+        ScreenRecorder r = new ScreenRecorder(video, audio, display, output.getAbsolutePath());
         r.setCallback(new ScreenRecorder.Callback() {
             long startTime = 0;
 
@@ -296,7 +297,7 @@ public class MainActivity extends Activity {
             if (granted == PackageManager.PERMISSION_GRANTED) {
                 requestMediaProjection();
             } else {
-                toast("No Permission!");
+                toast(getString(R.string.no_permission));
             }
         }
     }
@@ -379,14 +380,14 @@ public class MainActivity extends Activity {
         } else if (Build.VERSION.SDK_INT >= M) {
             requestPermissions();
         } else {
-            toast("No permission to write sd card");
+            toast(getString(R.string.no_permission_to_write_sd_ard));
         }
     }
 
     private void startRecorder() {
         if (mRecorder == null) return;
         mRecorder.start();
-        mButton.setText("Stop Recorder");
+        mButton.setText(getString(R.string.stop_recorder));
         registerReceiver(mStopActionReceiver, new IntentFilter(ACTION_STOP));
         moveTaskToBack(true);
     }
@@ -397,7 +398,7 @@ public class MainActivity extends Activity {
             mRecorder.quit();
         }
         mRecorder = null;
-        mButton.setText("Restart recorder");
+        mButton.setText(getString(R.string.restart_recorder));
         try {
             unregisterReceiver(mStopActionReceiver);
         } catch (Exception e) {
@@ -407,7 +408,7 @@ public class MainActivity extends Activity {
 
     private void cancelRecorder() {
         if (mRecorder == null) return;
-        Toast.makeText(this, "Permission denied! Screen recorder is cancel", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.permission_denied_screen_recorder_cancel), Toast.LENGTH_SHORT).show();
         stopRecorder();
     }
 
@@ -425,7 +426,7 @@ public class MainActivity extends Activity {
             return;
         }
         new AlertDialog.Builder(this)
-                .setMessage("Using your mic to record audio and your sd card to save video file")
+                .setMessage(getString(R.string.using_your_mic_to_record_audio))
                 .setCancelable(false)
                 .setPositiveButton(android.R.string.ok, (dialog, which) ->
                         requestPermissions(permissions, REQUEST_PERMISSIONS))
@@ -458,14 +459,14 @@ public class MainActivity extends Activity {
         int resetPos = Math.max(selectedPosition - 1, 0);
         if (!videoCapabilities.isSizeSupported(width, height)) {
             mVieoResolution.setSelectedPosition(resetPos);
-            toast("codec '%s' unsupported size %dx%d (%s)",
+            toast(getString(R.string.codec_unsupported_size),
                     codecName, width, height, mOrientation.getSelectedItem());
             Log.w("@@", codecName +
                     " height range: " + videoCapabilities.getSupportedHeights() +
                     "\n width range: " + videoCapabilities.getSupportedHeights());
         } else if (!videoCapabilities.areSizeAndRateSupported(width, height, selectedFramerate)) {
             mVieoResolution.setSelectedPosition(resetPos);
-            toast("codec '%s' unsupported size %dx%d(%s)\nwith framerate %d",
+            toast(getString(R.string.codec_unsupported_size_with_framerate),
                     codecName, width, height, mOrientation.getSelectedItem(), (int) selectedFramerate);
         }
     }
@@ -481,7 +482,7 @@ public class MainActivity extends Activity {
         int resetPos = Math.max(selectedPosition - 1, 0);
         if (!videoCapabilities.getBitrateRange().contains(selectedBitrate)) {
             mVideoBitrate.setSelectedPosition(resetPos);
-            toast("codec '%s' unsupported bitrate %d", codecName, selectedBitrate);
+            toast(getString(R.string.codec_unsupported_bitrate), codecName, selectedBitrate);
             Log.w("@@", codecName +
                     " bitrate range: " + videoCapabilities.getBitrateRange());
         }
@@ -500,7 +501,7 @@ public class MainActivity extends Activity {
         int resetPos = Math.max(mVieoResolution.getSelectedItemPosition() - 1, 0);
         if (!videoCapabilities.isSizeSupported(width, height)) {
             mVieoResolution.setSelectedPosition(resetPos);
-            toast("codec '%s' unsupported size %dx%d (%s)",
+            toast(getString(R.string.codec_unsupported_size),
                     codecName, width, height, orientation);
             return;
         }
@@ -528,10 +529,10 @@ public class MainActivity extends Activity {
         int resetPos = Math.max(selectedPosition - 1, 0);
         if (!videoCapabilities.getSupportedFrameRates().contains(selectedFramerate)) {
             mVideoFramerate.setSelectedPosition(resetPos);
-            toast("codec '%s' unsupported framerate %d", codecName, selectedFramerate);
+            toast(getString(R.string.codec_unsupported_with_framerate), codecName, selectedFramerate);
         } else if (!videoCapabilities.areSizeAndRateSupported(width, height, selectedFramerate)) {
             mVideoFramerate.setSelectedPosition(resetPos);
-            toast("codec '%s' unsupported size %dx%d\nwith framerate %d",
+            toast(getString(R.string.codec_unsupported_size_with_framerate),
                     codecName, width, height, selectedFramerate);
         }
     }
@@ -770,9 +771,13 @@ public class MainActivity extends Activity {
     }
 
     private void toast(String message, Object... args) {
+
+        int length_toast = Locale.getDefault().getCountry().equals("BR") ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT;
+        // In Brazilian Portuguese this may take longer to read
+
         Toast toast = Toast.makeText(this,
                 (args.length == 0) ? message : String.format(Locale.US, message, args),
-                Toast.LENGTH_SHORT);
+                length_toast);
         if (Looper.myLooper() != Looper.getMainLooper()) {
             runOnUiThread(toast::show);
         } else {
@@ -880,7 +885,7 @@ public class MainActivity extends Activity {
     private void stopRecordingAndOpenFile(Context context) {
         File file = new File(mRecorder.getSavedPath());
         stopRecorder();
-        Toast.makeText(context, "Recorder stopped!\n Saved file " + file, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, getString(R.string.recorder_stopped_saved_file) + " " + file, Toast.LENGTH_LONG).show();
         StrictMode.VmPolicy vmPolicy = StrictMode.getVmPolicy();
         try {
             // disable detecting FileUriExposure on public file

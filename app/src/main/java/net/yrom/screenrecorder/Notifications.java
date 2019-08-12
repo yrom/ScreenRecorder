@@ -57,7 +57,7 @@ class Notifications extends ContextWrapper {
             return;
         }
         Notification notification = getBuilder()
-                .setContentText("Length: " + DateUtils.formatElapsedTime(timeMs / 1000))
+                .setContentText(getString(R.string.length_video)+" " + DateUtils.formatElapsedTime(timeMs / 1000))
                 .build();
         getNotificationManager().notify(id, notification);
         mLastFiredTime = SystemClock.elapsedRealtime();
@@ -66,7 +66,7 @@ class Notifications extends ContextWrapper {
     private Notification.Builder getBuilder() {
         if (mBuilder == null) {
             Notification.Builder builder = new Notification.Builder(this)
-                    .setContentTitle("Recording...")
+                    .setContentTitle(getString(R.string.gravando))
                     .setOngoing(true)
                     .setLocalOnly(true)
                     .setOnlyAlertOnce(true)
@@ -95,7 +95,7 @@ class Notifications extends ContextWrapper {
             Intent intent = new Intent(ACTION_STOP).setPackage(getPackageName());
             PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1,
                     intent, PendingIntent.FLAG_ONE_SHOT);
-            mStopAction = new Notification.Action(android.R.drawable.ic_media_pause, "Stop", pendingIntent);
+            mStopAction = new Notification.Action(android.R.drawable.ic_media_pause, getString(R.string.stop), pendingIntent);
         }
         return mStopAction;
     }

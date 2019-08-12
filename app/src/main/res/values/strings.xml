@@ -2,4 +2,35 @@
 <resources>
 
     <string name="app_name">Screen Recorder</string>
+    <string name="video_encode_config_h_264_avc">Video Encode Config (H.264 AVC)</string>
+    <string name="video_encoder">Video Encoder</string>
+    <string name="resolution">Resolution</string>
+    <string name="bitrate">Bitrate (kbps)</string>
+    <string name="frame_rate">Frame Rate (fps)</string>
+    <string name="frame_interval">I-Frame Interval</string>
+    <string name="avc_profle">AVCProfile</string>
+    <string name="orientation">Orientation</string>
+    <string name="audio_encode_config_h_264_aac">Audio Encode Config (H.264 AAC)</string>
+    <string name="audio_encoder">Audio Encoder</string>
+    <string name="channels">Channels</string>
+    <string name="sample_rate">Sample Rate (HZ)</string>
+    <string name="aac_profile">AAC Profile</string>
+    <string name="without_audio">Without Audio</string>
+    <string name="with_audio">With Audio</string>
+    <string name="start_recorder">Start Recorder</string>
+    <string name="stop_recorder">Stop Recorder</string>
+    <string name="restart_recorder">Restart recorder</string>
+    <string name="no_permission">No Permission!</string>
+    <string name="no_permission_to_write_sd_ard">No permission to write sd card</string>
+    <string name="permission_denied_screen_recorder_cancel">Permission denied! Screen recorder is cancel</string>
+    <string name="using_your_mic_to_record_audio">Using your mic to record audio and your sd card to save video file</string>
+    <string name="codec_unsupported_size_with_framerate">codec \'%s\' unsupported size %dx%d(%s) with framerate %d</string>
+    <string name="codec_unsupported_size">codec \'%s\' unsupported size %dx%d (%s)</string>
+    <string name="codec_unsupported_bitrate">codec \'%s\' unsupported bitrate %d</string>
+    <string name="codec_unsupported_with_framerate">codec \'%s\' unsupported framerate %d</string>
+    <string name="recorder_stopped_saved_file">Recorder stopped!  Saved file</string>
+    <string name="length_video">Length:</string>
+    <string name="gravando">Recording...</string>
+    <string name="stop">Stop</string>
+    <string name="create_screenRecorder_failure">Create ScreenRecorder failure</string>
 </resources>
